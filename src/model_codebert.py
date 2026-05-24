@@ -1,31 +1,45 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+from transformers import (
+    AutoModel,
+    AutoTokenizer,
+)
 
 
-class CodeBertModel(nn.Module):
-    """
-    Modelo CodeBERT biencoder para selección de consultas SQL más adecuadas a la consulta NQL aportada
-    """
+class CodeBertBiEncoder(nn.Module):
 
-    def __init__(self, input_dim: int, hidden_dim: int):
+    def __init__(self, model_name="microsoft/codebert-base"):
         super().__init__()
 
-        latent_dim = hidden_dim // 2
+        self.encoder = AutoModel.from_pretrained(model_name)
 
-        self.encoder = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, latent_dim),
-            nn.ReLU(),
+    def encode(self, input_ids, attention_mask):
+        outputs = self.encoder(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
         )
 
-        self.decoder = nn.Sequential(
-            nn.Linear(latent_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, input_dim),
+        cls = outputs.last_hidden_state[
+            :, 0
+        ]  # CodeBERT CLS token (full query embedding vector)
+
+        return F.normalize(
+            cls,
+            p=2,
+            dim=1,
         )
 
-    def forward(self, x):
-        z = self.encoder(x)
-        out = self.decoder(z)
+    def forward(self, q_ids, q_mask, sql_ids, sql_mask):
+        q_emb = self.encode(
+            q_ids,
+            q_mask,
+        )
 
-        return out
+        sql_emb = self.encode(
+            sql_ids,
+            sql_mask,
+        )
+
+        return q_emb, sql_emb
