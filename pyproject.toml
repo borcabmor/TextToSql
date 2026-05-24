@@ -1,0 +1,15 @@
+[project]
+name = "text2sql-tfm"
+version = "0.1.0"
+description = "TFM Text-to-SQL"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "torch",
+    "transformers",
+    "datasets",
+    "pandas",
+    "wandb",
+    "numpy"
+]
