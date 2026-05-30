@@ -9,36 +9,36 @@ import wandb
 
 
 def evaluate_model(model, dataset, device, batch_size=16):
-    data_loader = DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, num_workers=0
-    )
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     model.eval()
-    all_q_embs = []
-    all_sql_embs = []
+    total_loss = 0
+    total_acc = 0
+    n_batches = 0
 
     with torch.no_grad():
-        for batch in data_loader:
+        for batch in loader:
             q_ids = batch["question_input_ids"].to(device)
             q_mask = batch["question_attention_mask"].to(device)
+
             sql_ids = batch["sql_input_ids"].to(device)
             sql_mask = batch["sql_attention_mask"].to(device)
 
-            all_q_embs.append(model.encode(q_ids, q_mask).cpu())
-            all_sql_embs.append(model.encode(sql_ids, sql_mask).cpu())
+            q_emb, sql_emb = model(q_ids, q_mask, sql_ids, sql_mask)
 
-    all_q_embs = torch.cat(all_q_embs)
-    all_sql_embs = torch.cat(all_sql_embs)
+            logits = q_emb @ sql_emb.T
+            labels = torch.arange(logits.size(0), device=device)
 
-    sim = all_q_embs @ all_sql_embs.T
-    labels = torch.arange(sim.size(0))
+            loss = F.cross_entropy(logits, labels)
 
-    loss = F.cross_entropy(sim, labels).item()
+            preds = logits.argmax(dim=1)
+            acc = (preds == labels).float().mean()
 
-    preds = sim.argmax(dim=1)
-    acc = (preds == labels).float().mean().item()
+            total_loss += loss.item()
+            total_acc += acc.item()
+            n_batches += 1
 
-    return loss, acc
+    return total_loss / n_batches, total_acc / n_batches
 
 
 def train_model(

@@ -7,9 +7,9 @@ train_size: 0.7
 train_path: data/train-00000-of-00001.parquet
 validation_path: data/validation-00000-of-00001.parquet
 codebert_model_name: microsoft/codebert-base
-freeze_layers: 4
+freeze_layers: 8
 codebert_model_path: models/codebert_model.pth
 sql_index_path: models/sql_index.pt
-max_length: 253
+max_length: 81
 patience: 3
 llm_model: claude-sonnet-4-6
