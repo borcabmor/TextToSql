@@ -1,5 +1,6 @@
 logs/
 wandb/
+models/
 
 src/__pycache__/
 *.pyc
