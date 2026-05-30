@@ -44,6 +44,24 @@ def load_config(filename: str) -> dict:
         return yaml.safe_load(file)
 
 
+def data_preprocess(df: pd.DataFrame) -> pd.DataFrame:
+    return_df: pd.DataFrame
+
+    # Remove unused columns
+    return_df = df[["db_id", "question", "query"]]
+
+    # Long spaces to 1 space
+    return_df["question"] = (
+        return_df["question"].replace(r"\s+", " ", regex=True).str.strip()
+    )
+    return_df["query"] = return_df["query"].replace(r"\s+", " ", regex=True).str.strip()
+
+    # remove rows with none values
+    return_df = return_df.dropna()
+
+    return return_df
+
+
 def load_and_split_spider(
     train_path: str,
     validation_path: str,
@@ -67,6 +85,9 @@ def load_and_split_spider(
     df = pd.concat([train_df, validation_df], ignore_index=True)
 
     logger.info(f"Total rows: {len(df)}")
+
+    # Dataset preprocess
+    df = data_preprocess(df)
 
     # --------
     # TRAIN 70%
