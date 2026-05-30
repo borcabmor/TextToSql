@@ -9,15 +9,16 @@ import wandb
 
 
 def evaluate_model(model, dataset, device, batch_size=16):
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    validation_loader = DataLoader(
+        dataset, batch_size=batch_size, shuffle=False, num_workers=0
+    )
 
     model.eval()
     total_loss = 0
     total_acc = 0
-    n_batches = 0
 
     with torch.no_grad():
-        for batch in loader:
+        for batch in validation_loader:
             q_ids = batch["question_input_ids"].to(device)
             q_mask = batch["question_attention_mask"].to(device)
 
@@ -36,9 +37,8 @@ def evaluate_model(model, dataset, device, batch_size=16):
 
             total_loss += loss.item()
             total_acc += acc.item()
-            n_batches += 1
 
-    return total_loss / n_batches, total_acc / n_batches
+    return total_loss / len(validation_loader), total_acc / len(validation_loader)
 
 
 def train_model(
@@ -67,6 +67,7 @@ def train_model(
 
     for epoch in range(epochs):
         # --- Training ---
+        # Set model in train mode
         model.train()
         train_loss = 0.0
 
@@ -78,6 +79,7 @@ def train_model(
 
             optimizer.zero_grad()
 
+            # Call forward
             q_emb, sql_emb = model(q_ids, q_mask, sql_ids, sql_mask)
 
             # Contrastive loss: question i should match SQL i
