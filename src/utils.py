@@ -162,18 +162,20 @@ def set_max_tokens(
     tokenizer,
 ):
     """
-    Save max_length based on CodeBERT tokenization
+    Save max_length based on 99 percentile of CodeBERT tokenization (to exclude outliers)
     """
     df = pd.concat([train_df, validation_df, test_df], ignore_index=True)
 
-    max_q = max(
-        len(tokenizer.encode(q, add_special_tokens=True)) for q in df["question"]
+    q_lengths = df["question"].apply(
+        lambda q: len(tokenizer.encode(q, add_special_tokens=True))
+    )
+    sql_lengths = df["query"].apply(
+        lambda sql: len(tokenizer.encode(sql, add_special_tokens=True))
     )
 
-    max_sql = max(
-        len(tokenizer.encode(sql, add_special_tokens=True)) for sql in df["query"]
+    max_tokens = max(
+        q_lengths.quantile(0.95),
+        sql_lengths.quantile(0.95),
     )
-
-    max_tokens = max(max_q, max_sql)
 
     save_data_to_config("max_length", int(max_tokens), config_file)
