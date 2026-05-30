@@ -1,5 +1,5 @@
 lr: 1e-5
-epochs: 10
+epochs: 20
 random_state: 42
 weight_decay: 0.01
 batch_size: 8
@@ -7,7 +7,7 @@ train_size: 0.7
 train_path: data/train-00000-of-00001.parquet
 validation_path: data/validation-00000-of-00001.parquet
 codebert_model_name: microsoft/codebert-base
-freeze_layers: 8
+freeze_layers: 10
 codebert_model_path: models/codebert_model.pth
 sql_index_path: models/sql_index.pt
 max_length: 81
