@@ -7,9 +7,18 @@ requires-python = ">=3.13"
 
 dependencies = [
     "torch",
+    "scikit-learn",
     "transformers",
     "datasets",
     "pandas",
+    "pyarrow",
     "wandb",
-    "numpy"
+    "numpy",
+    "sqlalchemy",
+    "pyyaml",
+    "langchain",
+    "langchain-core",
+    "langchain-anthropic",
+    "fastapi",
+    "uvicorn[standard]",
 ]
