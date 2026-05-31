@@ -1,0 +1,16 @@
+# Set base image
+FROM python:3.10-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir uv
+COPY pyproject.toml uv.lock* ./
+RUN uv sync --frozen --no-dev
+
+# Copy all source to working directory
+COPY . .
+
+# use uvicorn to run API in local
+CMD ["uv", "run", "uvicorn", "src.api.api_inference:app", "--host", "0.0.0.0", "--port", "8000"]
