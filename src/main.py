@@ -21,6 +21,7 @@ from src.utils import (
     load_config,
     save_model,
     set_max_tokens,
+    set_seed,
 )
 
 
@@ -28,22 +29,23 @@ def main():
     setup_logging("debug")
     logger = logging.getLogger(__name__)
 
+    logger.info("Init execution")
+
+    device = get_device()
+    logger.info(f"Device: {device}")
+
     # Loa dconfig file
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", help="Yaml config file")
     args = parser.parse_args()
     config = load_config(args.config_file)
 
-    # Initialize W&B with config file params
-
-    logger.info("Init execution")
-
-    device = get_device()
-    logger.info(f"Device: {device}")
-
-    logger.info("Loading Spider dataset")
+    # Set seed for reproducibility
+    set_seed(int(config["random_state"]))
 
     # Split datasets for train, validation and test
+    logger.info("Loading Spider dataset")
+
     train_df, validation_df, test_df = load_and_split_spider(
         train_path=config["train_path"],
         validation_path=config["validation_path"],
@@ -66,7 +68,7 @@ def main():
     # reload config with data changed
     config = load_config(args.config_file)
 
-    # Init WandB
+    # Initialize W&B with config file params
     wandb.init(
         project="text2sql_codebert",
         config=config,
