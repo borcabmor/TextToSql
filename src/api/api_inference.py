@@ -1,6 +1,6 @@
 import logging
-from contextlib import asynccontextmanager
 
+import torch
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoTokenizer
@@ -17,40 +17,54 @@ logger = logging.getLogger(__name__)
 _agent: TextToSQLAgent | None = None
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+def get_agent() -> TextToSQLAgent:
     global _agent
 
-    config = load_config("config.yaml")
-    device = get_device()
+    if _agent is None:
+        try:
+            logger.info("Loading model...")
 
-    # Load weights
-    tokenizer = AutoTokenizer.from_pretrained(config["codebert_model_name"])
-    model = CodeBertBiEncoder(model_name=config["codebert_model_name"])
-    model = load_model_weights(model, config["codebert_model_path"])
-    model.to(device)
-    model.eval()
+            config = load_config("config.yaml")
+            device = get_device()
 
-    # Load index dictionary
-    retriever = SQLRetriever(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        max_length=int(config["max_length"]),
-    )
+            tokenizer = AutoTokenizer.from_pretrained(config["codebert_model_name"])
 
-    retriever.load_index(config["sql_index_path"])
+            model = CodeBertBiEncoder(model_name=config["codebert_model_name"])
 
-    # Create langchain agent
-    _agent = TextToSQLAgent(retriever=retriever, llm_model=config["llm_model"])
+            model = load_model_weights(model, config["codebert_model_path"])
 
-    # API ready
-    logger.info("API ready")
+            model.to(device)
+            model.eval()
 
-    yield
+            torch.set_grad_enabled(False)
+
+            retriever = SQLRetriever(
+                model=model,
+                tokenizer=tokenizer,
+                device=device,
+                max_length=int(config["max_length"]),
+            )
+
+            retriever.load_index(config["sql_index_path"])
+
+            _agent = TextToSQLAgent(
+                retriever=retriever,
+                llm_model=config["llm_model"],
+            )
+
+            logger.info("Model loaded")
+
+        except Exception:
+            logger.exception("Model loading failed")
+            raise HTTPException(
+                status_code=503,
+                detail="Model loading failed",
+            )
+
+    return _agent
 
 
-app = FastAPI(title="Text-to-SQL API", lifespan=lifespan)
+app = FastAPI(title="Text-to-SQL API")
 
 
 class GenerateRequest(BaseModel):
@@ -72,31 +86,29 @@ def health():
     return {"status": "ok"}
 
 
-_MODEL_NOT_LOADED = "Model not loaded"
-_503 = {503: {"description": _MODEL_NOT_LOADED}}
-
-
-@app.post("/generate", responses=_503)
+@app.post("/generate")
 def generate(req: GenerateRequest):
     """
     Generate SQL query from NQL
     """
+    agent = get_agent()
 
-    if _agent is None:
-        raise HTTPException(status_code=503, detail=_MODEL_NOT_LOADED)
-
-    sql = _agent.generate_sql(req.question, req.connection_string)
+    sql = agent.generate_sql(
+        req.question,
+        req.connection_string,
+    )
 
     return {"sql": sql}
 
 
-@app.post("/query", responses=_503)
+@app.post("/query")
 def query(req: QueryRequest):
     """
     Generate SQL query from NQL and execute SQL query over database
     """
+    agent = get_agent()
 
-    if _agent is None:
-        raise HTTPException(status_code=503, detail=_MODEL_NOT_LOADED)
-
-    return _agent.query(req.question, req.connection_string)
+    return agent.query(
+        req.question,
+        req.connection_string,
+    )
