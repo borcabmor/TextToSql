@@ -6,6 +6,10 @@ src/__pycache__/
 *.pyc
 *.pyo
 
+tests/__pycache__/
+*.pyc
+*.pyo
+
 .pytest_cache/
 
 .vscode/
