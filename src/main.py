@@ -144,6 +144,19 @@ def main():
     retriever.save_index(config["sql_index_path"])
     logger.info("SQL index saved")
 
+    # SQL index artifact to W&B
+    index_artifact = wandb.Artifact(
+        name="sql_index",
+        type="index",
+        description="SQL retriever index",
+    )
+
+    index_artifact.add_file(config["sql_index_path"])
+    index_artifact.add_file(str(Path(config["sql_index_path"]).with_suffix(".json")))
+
+    wandb.log_artifact(index_artifact)
+
+    logger.info("SQL index artifact logged")
     logger.info("Execution finished")
 
 
