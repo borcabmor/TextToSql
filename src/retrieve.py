@@ -95,8 +95,8 @@ class SQLRetriever:
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
 
-        # Tensor saved separately for safe loading (weights_only=True)
-        torch.save(self.sql_embeddings, p)
+        # Tensor saved separately for safe loading (weights_only=True). Use float 16 to save memory
+        torch.save(self.sql_embeddings.half(), p)
 
         with open(p.with_suffix(".json"), "w") as f:
             json.dump({"queries": self.sql_queries, "questions": self.questions}, f)
@@ -106,7 +106,10 @@ class SQLRetriever:
         Load index dictionary from json
         """
         p = Path(path)
-        self.sql_embeddings = torch.load(p, map_location="cpu", weights_only=True)
+
+        self.sql_embeddings = torch.load(
+            p, map_location="cpu", weights_only=True
+        ).half()
 
         with open(p.with_suffix(".json")) as f:
             data = json.load(f)
