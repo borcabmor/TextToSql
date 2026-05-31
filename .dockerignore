@@ -3,6 +3,8 @@
 .vscode/
 .git/
 data/
+wandb/
+models/
 
 .env
 
@@ -18,9 +20,4 @@ tests/
 
 logs/
 *.logs
-
-wandb/
-
-models/baseline_codebert_model.pthç
-models/sql_baseline_index.*
 

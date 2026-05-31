@@ -8,6 +8,8 @@ import torch
 import yaml
 from sklearn.model_selection import GroupShuffleSplit
 
+import wandb
+
 
 def get_device():
     """
@@ -200,3 +202,57 @@ def set_max_tokens(
     )
 
     save_data_to_config("max_length", int(max_tokens), config_file)
+
+
+def download_artifact(
+    artifact_name: str,
+    artifact_type: str,
+    local_dir: str = "models",
+):
+    """
+    Download W&B artifact
+    """
+
+    run = wandb.init(
+        project="text2sql_codebert",
+        job_type="inference",
+    )
+
+    artifact = run.use_artifact(
+        artifact_name,
+        type=artifact_type,
+    )
+
+    artifact.download(root=local_dir)
+
+    run.finish()
+
+
+def ensure_model_exists(path: str):
+    """
+    Ensure model exists locally
+    """
+    p = Path(path)
+
+    if p.exists():
+        return
+
+    download_artifact(
+        artifact_name="trained_model:latest",
+        artifact_type="model",
+    )
+
+
+def ensure_index_exists(path: str):
+    """
+    Ensure SQL index exists locally
+    """
+    p = Path(path)
+
+    if p.exists() and p.with_suffix(".json").exists():
+        return
+
+    download_artifact(
+        artifact_name="sql_index:latest",
+        artifact_type="index",
+    )
