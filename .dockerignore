@@ -1,6 +1,8 @@
 .venv/
 .claude/
 .vscode/
+.git/
+data/
 
 .env
 
@@ -10,9 +12,7 @@ src/__pycache__/
 *.pyc
 *.pyo
 
-tests/__pycache__/
-*.pyc
-*.pyo
+tests/
 
 .pytest_cache/
 

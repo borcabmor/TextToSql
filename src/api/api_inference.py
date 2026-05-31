@@ -24,6 +24,7 @@ def get_agent() -> TextToSQLAgent:
         try:
             logger.info("Loading model...")
 
+            # Load config and set if using CPU or GPU
             config = load_config("config.yaml")
             device = get_device()
 
@@ -38,6 +39,7 @@ def get_agent() -> TextToSQLAgent:
 
             torch.set_grad_enabled(False)
 
+            # Inicialize retriever
             retriever = SQLRetriever(
                 model=model,
                 tokenizer=tokenizer,
@@ -45,8 +47,10 @@ def get_agent() -> TextToSQLAgent:
                 max_length=int(config["max_length"]),
             )
 
+            # Load embedings index dictionary
             retriever.load_index(config["sql_index_path"])
 
+            # Inicialize langchain agent
             _agent = TextToSQLAgent(
                 retriever=retriever,
                 llm_model=config["llm_model"],
@@ -56,6 +60,7 @@ def get_agent() -> TextToSQLAgent:
 
         except Exception:
             logger.exception("Model loading failed")
+
             raise HTTPException(
                 status_code=503,
                 detail="Model loading failed",

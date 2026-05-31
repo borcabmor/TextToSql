@@ -6,11 +6,12 @@ WORKDIR /app
 
 # Install dependencies
 RUN pip install --no-cache-dir uv
+
 COPY pyproject.toml uv.lock* ./
 RUN uv sync --frozen --no-dev
 
-# Copy all source to working directory
+# Copy source
 COPY . .
 
-# use uvicorn to run API in local
-CMD ["uv", "run", "uvicorn", "src.api.api_inference:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run API using Render PORT
+CMD ["sh", "-c", "uv run uvicorn src.api.api_inference:app --host 0.0.0.0 --port ${PORT:-8000}"]
