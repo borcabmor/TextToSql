@@ -1,9 +1,10 @@
 import logging
-
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoTokenizer
+
 from src.langchain.agent import TextToSQLAgent
 from src.logging_config import setup_logging
 from src.model_codebert import CodeBertBiEncoder
@@ -13,7 +14,7 @@ from src.utils import get_device, load_config, load_model_weights
 setup_logging("info")
 logger = logging.getLogger(__name__)
 
-_agent: TextToSQLAgent | None
+_agent: TextToSQLAgent | None = None
 
 
 @asynccontextmanager

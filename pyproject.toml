@@ -16,6 +16,7 @@ dependencies = [
     "numpy",
     "sqlalchemy",
     "pyyaml",
+    "pytest",
     "langchain",
     "langchain-core",
     "langchain-anthropic",
