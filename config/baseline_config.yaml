@@ -12,4 +12,4 @@ codebert_model_path: models/baseline_codebert_model.pth
 sql_index_path: models/sql_baseline_index.pt
 max_length: 80
 patience: 5
-llm_model: claude-sonnet-4-6
+llm_model: claude-haiku-4-5

@@ -20,7 +20,7 @@ from src.utils import (
     load_model_weights,
 )
 
-setup_logging("info")
+setup_logging("info", "app_inference.log")
 logger = logging.getLogger(__name__)
 
 _agent: TextToSQLAgent | None = None

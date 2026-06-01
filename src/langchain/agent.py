@@ -22,23 +22,33 @@ class TextToSQLAgent:
         )
 
     def generate_sql(self, question: str, connection_string: str) -> str:
-        response = self.agent.invoke({"messages": [HumanMessage(content=f"""
-            Connection string:
-            {connection_string}
-            Question:
-            {question}
-            Generate SQL only.
-            """)]})
+        response = self.agent.invoke(
+            {"messages": [HumanMessage(content=f"""
+                Connection string:
+                {connection_string}
+                Question:
+                {question}
+                Generate SQL only.
+                """)]},
+            debug=True,
+        )
+
+        self.logger.info(response)
 
         return response["messages"][-1].content.strip()
 
     def query(self, question: str, connection_string: str):
-        response = self.agent.invoke({"messages": [HumanMessage(content=f"""
+        response = self.agent.invoke(
+            {"messages": [HumanMessage(content=f"""
             Connection string:
             {connection_string}
             Question:
             {question}
             Generate and execute SQL.
-            """)]})
+            """)]},
+            debug=True,
+        )
+
+        self.logger.info(response)
 
         return {"response": response["messages"][-1].content}

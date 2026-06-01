@@ -1,12 +1,16 @@
-from langchain.tools import tool
 from sqlalchemy import create_engine, inspect, text
+
+from langchain.tools import tool
 from src.retrieve import SQLRetriever
 
 
 def make_retrieve_sql(retriever: SQLRetriever):
     @tool
     def retrieve_sql(question: str) -> str:
-        """Retrieve a similar SQL example."""
+        """
+        Retrieve a semantically similar SQL example to guide SQL generation.
+        """
+
         results = retriever.retrieve(question)
 
         return results[0]["sql"] if results else ""
@@ -16,7 +20,12 @@ def make_retrieve_sql(retriever: SQLRetriever):
 
 @tool
 def get_db_schema(connection_string: str) -> str:
-    """Return database schema."""
+    """
+    Inspect a PostgreSQL database and return tables,
+    columns, primary keys and foreign keys.
+
+    Use this tool before generating SQL queries.
+    """
 
     engine = create_engine(connection_string)
     inspector = inspect(engine)
@@ -60,7 +69,11 @@ def execute_sql(
     connection_string: str,
     sql: str,
 ) -> list[dict]:
-    """Execute SQL query."""
+    """
+    Execute a SQL query against the database.
+
+    Use only when execution is explicitly requested.
+    """
 
     engine = create_engine(connection_string)
 
