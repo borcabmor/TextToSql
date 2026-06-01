@@ -4,14 +4,13 @@ import logging
 import pandas as pd
 from dotenv import load_dotenv
 
-import wandb
-
 load_dotenv()
 
 from pathlib import Path
 
 from transformers import AutoTokenizer
 
+import wandb
 from src.dataset import SpiderDataset
 from src.logging_config import setup_logging
 from src.model_codebert import CodeBertBiEncoder
