@@ -1,9 +1,12 @@
 import logging
 
 import torch
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoTokenizer
+
+load_dotenv()
 
 from src.langchain.agent import TextToSQLAgent
 from src.logging_config import setup_logging
