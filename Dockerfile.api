@@ -14,4 +14,4 @@ RUN uv sync --frozen --no-dev
 COPY . .
 
 # Run API using Render PORT
-CMD ["uvicorn", "src.api_inference:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD sh -c "uvicorn src.api.api_inference:app --host 0.0.0.0 --port $PORT"
