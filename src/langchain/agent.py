@@ -30,13 +30,13 @@ class TextToSQLAgent:
         self.retrieve_tool = make_retrieve_sql(retriever)
         self.schema_cache = {}
 
-    def load_schema_node(self, state: AgentState) -> AgentState:
+    def load_schema_node(self, state: AgentState) -> str:
         """
         Load schema once per request and store in state
         """
 
         if state.get("schema"):
-            return state
+            return state["schema"]
 
         cs = state["connection_string"]
 
@@ -44,7 +44,7 @@ class TextToSQLAgent:
             self.logger.info("Schema loaded from cache")
             state["schema"] = self.schema_cache[cs]
 
-            return state
+            return state["schema"]
 
         self.logger.info("Loading schema from DB")
 
@@ -53,9 +53,9 @@ class TextToSQLAgent:
         self.schema_cache[cs] = schema
         state["schema"] = schema
 
-        return state
+        return schema
 
-    def generate_sql(self, state: AgentState) -> AgentState:
+    def generate_sql(self, state: AgentState) -> str:
         """
         Generate SQL only
         """
@@ -87,7 +87,7 @@ class TextToSQLAgent:
 
         state["sql"] = sql
 
-        return state
+        return state["sql"]
 
     def query(self, state: AgentState) -> AgentState:
         """
