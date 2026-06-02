@@ -17,6 +17,7 @@ def test_running_endpoint():
 
 def test_generate_endpoint():
     mock_agent = MagicMock()
+    mock_agent.load_schema_node.return_value = "schema"
     mock_agent.generate_sql.return_value = "SELECT * FROM users"
 
     payload = {
@@ -24,21 +25,18 @@ def test_generate_endpoint():
         "connection_string": "sqlite:///test.db",
     }
 
-    with patch(
-        "src.api.api_inference.get_agent",
-        return_value=mock_agent,
-    ):
+    with patch("src.api.api_inference.get_agent", return_value=mock_agent):
         response = client.post("/generate", json=payload)
 
     assert response.status_code == 200
-    assert response.json()["sql"] == "SELECT * FROM users"
+    assert response.json() == {"sql": "SELECT * FROM users"}
 
 
 def test_query_endpoint():
     mock_agent = MagicMock()
     mock_agent.query.return_value = {
         "sql": "SELECT * FROM users",
-        "rows": [{"id": 1}],
+        "result": "returned rows",
     }
 
     payload = {
@@ -46,18 +44,11 @@ def test_query_endpoint():
         "connection_string": "sqlite:///test.db",
     }
 
-    with patch(
-        "src.api.api_inference.get_agent",
-        return_value=mock_agent,
-    ):
+    with patch("src.api.api_inference.get_agent", return_value=mock_agent):
         response = client.post("/query", json=payload)
 
     assert response.status_code == 200
-
-    data = response.json()
-
-    assert "sql" in data
-    assert "rows" in data
+    assert response.json() == {"sql": "SELECT * FROM users", "result": "returned rows"}
 
 
 def test_generate_endpoint_model_loading_failed():

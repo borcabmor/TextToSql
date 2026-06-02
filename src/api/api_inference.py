@@ -125,10 +125,10 @@ def generate(req: GenerateRequest):
         "result": None,
     }
 
-    state = agent.load_schema_node(state)
-    state = agent.generate_sql(state)
+    state["schema"] = agent.load_schema_node(state)
+    sql_query = agent.generate_sql(state)
 
-    return {"sql": state["sql"]}
+    return {"sql": sql_query}
 
 
 @app.post("/query")
@@ -147,7 +147,7 @@ def query(req: QueryRequest):
         "result": None,
     }
 
-    state = agent.load_schema_node(state)
+    state["schema"] = agent.load_schema_node(state)
 
     result = agent.query(state)
 
