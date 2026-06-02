@@ -23,4 +23,6 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "psycopg2-binary>=2.9.12",
+    "langgraph>=1.2.1",
+    "python-dotenv>=1.2.2",
 ]

@@ -20,7 +20,7 @@ from src.utils import (
     load_model_weights,
 )
 
-setup_logging("info")
+setup_logging("info", "app_inference.log")
 logger = logging.getLogger(__name__)
 
 _agent: TextToSQLAgent | None = None
@@ -117,12 +117,18 @@ def generate(req: GenerateRequest):
     """
     agent = get_agent()
 
-    sql = agent.generate_sql(
-        req.question,
-        req.connection_string,
-    )
+    state = {
+        "question": req.question,
+        "connection_string": req.connection_string,
+        "schema": None,
+        "sql": None,
+        "result": None,
+    }
 
-    return {"sql": sql}
+    state = agent.load_schema_node(state)
+    state = agent.generate_sql(state)
+
+    return {"sql": state["sql"]}
 
 
 @app.post("/query")
@@ -130,9 +136,22 @@ def query(req: QueryRequest):
     """
     Generate SQL query from NQL and execute SQL query over database
     """
+
     agent = get_agent()
 
-    return agent.query(
-        req.question,
-        req.connection_string,
-    )
+    state = {
+        "question": req.question,
+        "connection_string": req.connection_string,
+        "schema": None,
+        "sql": None,
+        "result": None,
+    }
+
+    state = agent.load_schema_node(state)
+
+    result = agent.query(state)
+
+    return {
+        "sql": result["sql"],
+        "result": result["result"],
+    }
