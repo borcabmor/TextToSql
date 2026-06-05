@@ -52,4 +52,5 @@ jobs:
               --name text-to-sql-api \
               --restart unless-stopped \
               -p 80:8000 \
+              -e WANDB_API_KEY=${{ secrets.WANDB_API_KEY }} \
               ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
