@@ -36,5 +36,20 @@ jobs:
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
 
-      - name: Trigger Render Deploy
-        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Deploy OVH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
+
+            docker stop text-to-sql-api || true
+            docker rm text-to-sql-api || true
+
+            docker run -d \
+              --name text-to-sql-api \
+              --restart unless-stopped \
+              -p 80:8000 \
+              ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
