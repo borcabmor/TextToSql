@@ -128,7 +128,7 @@ def generate(req: GenerateRequest):
     state["schema"] = agent.load_schema_node(state)
     sql_query = agent.generate_sql(state)
 
-    return {"sql": sql_query}
+    return {"sql": " ".join(sql_query.split())}
 
 
 @app.post("/query")
@@ -152,6 +152,6 @@ def query(req: QueryRequest):
     result = agent.query(state)
 
     return {
-        "sql": result["sql"],
+        "sql": " ".join(result["sql"].split()),
         "result": result["result"],
     }
