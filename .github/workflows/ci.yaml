@@ -32,8 +32,3 @@ jobs:
 
     - name: Ejecutar tests de API
       run: uv run pytest tests/test_inference.py
-      
-    - name: Construir la imagen
-      run: |
-        echo "Construyendo la imagen"
-        docker build -f Dockerfile.api -t text_to_sql_api_v1:test .
