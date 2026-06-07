@@ -3,7 +3,7 @@ import logging
 from typing import Any, Optional, TypedDict
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
 from langchain.agents import create_agent
 from src.langchain.prompts import SYSTEM_PROMPT
@@ -60,23 +60,25 @@ class TextToSQLAgent:
         Generate SQL only
         """
 
-        agent = create_agent(
-            model=self.model,
-            tools=[self.retrieve_tool],
-            system_prompt=SYSTEM_PROMPT,
+        retrieve_sql = self.retrieve_tool.invoke({"question": state["question"]})
+
+        response = self.model.invoke(
+            [
+                SystemMessage(content=SYSTEM_PROMPT),
+                HumanMessage(content=f"""
+                    Schema:
+                    {state['schema']}
+
+                    Similar SQL example:
+                    {retrieve_sql}
+
+                    Question:
+                    {state['question']}
+                    """),
+            ]
         )
 
-        response = agent.invoke({"messages": [HumanMessage(content=f"""
-                Schema:
-                {state['schema']}
-
-                Question:
-                {state['question']}
-
-                Return ONLY SQL.
-                """)]})
-
-        sql = response["messages"][-1].content.strip()
+        sql = response.content.strip()
 
         # Remove markdown chars
         if sql.startswith("```"):
@@ -87,7 +89,7 @@ class TextToSQLAgent:
 
         state["sql"] = sql
 
-        return state["sql"]
+        return sql
 
     def query(self, state: AgentState) -> AgentState:
         """
@@ -97,15 +99,19 @@ class TextToSQLAgent:
         exec_agent = create_agent(
             model=self.model,
             tools=[
-                self.retrieve_tool,
                 make_execute_sql(state["connection_string"]),
             ],
             system_prompt=SYSTEM_PROMPT,
         )
 
+        retrieve_sql = self.retrieve_tool.invoke({"question": state["question"]})
+
         response = exec_agent.invoke({"messages": [HumanMessage(content=f"""
                 Schema:
                 {state['schema']}
+
+                Similar SQL example:
+                {retrieve_sql}
 
                 Question:
                 {state['question']}
