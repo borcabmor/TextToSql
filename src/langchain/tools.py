@@ -11,7 +11,8 @@ def make_retrieve_sql(retriever: SQLRetriever):
     @tool
     def retrieve_sql(question: str) -> str:
         """
-        Retrieve a semantically similar SQL example to guide SQL generation.
+        Retrieve a SQL query equivalent to natural language query.
+        RETRIEVE ONLY RAW SQL QUERY
         """
 
         results = retriever.retrieve(question)
