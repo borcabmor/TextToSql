@@ -103,8 +103,7 @@ class TextToSQLAgent:
             system_prompt=SYSTEM_PROMPT,
         )
 
-        response = exec_agent.invoke(
-            {"messages": [HumanMessage(content=f"""
+        response = exec_agent.invoke({"messages": [HumanMessage(content=f"""
                 Schema:
                 {state['schema']}
 
@@ -113,9 +112,7 @@ class TextToSQLAgent:
 
                 Generate SQL and call execute_sql.
                 Return no explanation.
-                """)]},
-            config={"recursion_limit": 5},
-        )
+                """)]})
 
         self.logger.info(response)
 

@@ -3,6 +3,7 @@ import logging
 import torch
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import AutoTokenizer
 
@@ -89,6 +90,14 @@ def get_agent() -> TextToSQLAgent:
 
 
 app = FastAPI(title="Text-to-SQL API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://51.38.226.139"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class GenerateRequest(BaseModel):
