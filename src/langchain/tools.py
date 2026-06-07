@@ -81,29 +81,35 @@ def make_execute_sql(connection_string: str):
         Execute a SQL query and return results as a list of dictionaries.
         """
 
-        cs = connection_string
+        if any(
+            x in sql.upper() for x in ["UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE"]
+        ):
+            return "No allow to excute."
+        else:
+            cs = connection_string
 
-        if "sslmode=" not in cs:
-            cs += "&sslmode=require" if "?" in cs else "?sslmode=require"
+            if "sslmode=" not in cs:
+                cs += "&sslmode=require" if "?" in cs else "?sslmode=require"
 
-        engine = create_engine(cs)
+            engine = create_engine(cs)
 
-        try:
-            with engine.connect() as conn:
-                result = conn.execute(text(sql))
-                rows = [dict(r._mapping) for r in result]
+            try:
+                with engine.connect() as conn:
+                    result = conn.execute(text(sql))
+                    rows = [dict(r._mapping) for r in result]
 
-                def serialize(v):
-                    if isinstance(v, (dt.datetime, dt.date)):
-                        return v.isoformat()
-                    if isinstance(v, uuid.UUID):
-                        return str(v)
+                    def serialize(v):
+                        if isinstance(v, (dt.datetime, dt.date)):
+                            return v.isoformat()
 
-                    return v
+                        if isinstance(v, uuid.UUID):
+                            return str(v)
 
-                return [{k: serialize(v) for k, v in row.items()} for row in rows]
+                        return v
 
-        finally:
-            engine.dispose()
+                    return [{k: serialize(v) for k, v in row.items()} for row in rows]
+
+            finally:
+                engine.dispose()
 
     return execute_sql
