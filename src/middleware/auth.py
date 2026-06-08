@@ -1,10 +1,8 @@
-import logging
 from os import getenv
 
-from fastapi import HTTPException, Request, status
+from fastapi import Request, status
+from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
-
-logger = logging.getLogger(__name__)
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM", "HS256")
@@ -23,20 +21,20 @@ async def auth_middleware(request: Request, call_next):
 
     auth_header = request.headers.get("Authorization")
 
-    logger.info(f"Authorization: {auth_header}")
-    logger.info(f"SECRET_KEY configured: {SECRET_KEY is not None}")
-    logger.info(f"ALGORITHM: {ALGORITHM}")
-
     if not auth_header:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing",
+            content={"detail": "Authorization header missing"},
         )
 
     try:
         scheme, token = auth_header.split(" ", 1)
 
-        logger.info(f"Scheme: {scheme}")
+        if scheme.lower() != "bearer":
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "Invalid auth scheme"},
+            )
 
         payload = jwt.decode(
             token,
@@ -46,8 +44,16 @@ async def auth_middleware(request: Request, call_next):
 
         request.state.user = payload
 
+    except JWTError as e:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": f"JWT error: {str(e)}"},
+        )
+
     except Exception as e:
-        logger.exception(e)
-        raise
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": f"Auth error: {str(e)}"},
+        )
 
     return await call_next(request)

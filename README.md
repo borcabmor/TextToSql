@@ -1,0 +1,1 @@
+Copio dentro de la carpeta de mi proyecto en OVH el docker-compose.yml
