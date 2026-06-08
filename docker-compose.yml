@@ -1,0 +1,17 @@
+services:
+  text-to-sql-api:
+    image: ghcr.io/borcabmor/text-to-sql-api:latest
+    container_name: text-to-sql-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true  # Red compartida con los demás contenedores

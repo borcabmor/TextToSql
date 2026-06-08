@@ -14,6 +14,14 @@ src/__pycache__/
 *.pyc
 *.pyo
 
+src/middleware/__pycache__/
+*.pyc
+*.pyo
+
+src/api/__pycache__/
+*.pyc
+*.pyo
+
 tests/
 
 .pytest_cache/

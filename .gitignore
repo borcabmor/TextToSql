@@ -10,6 +10,10 @@ tests/__pycache__/
 *.pyc
 *.pyo
 
+middleware/__pycache__/
+*.pyc
+*.pyo
+
 .pytest_cache/
 
 .vscode/
