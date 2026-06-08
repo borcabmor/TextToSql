@@ -858,12 +858,6 @@ wheels = [
 ]
 
 [[package]]
-name = "jose"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/01/3d/832caa69cd0d3be2d608d8290be2221072669aa88e87690837f6b31c480f/jose-1.0.0.tar.gz", hash = "sha256:8436c3617cd94e1ba97828fbb1ce27c129f66c78fb855b4bb47e122b5f345fba", size = 9153, upload-time = "2015-11-13T10:52:21.506Z" }
-
-[[package]]
 name = "jsonpatch"
 version = "1.33"
 source = { registry = "https://pypi.org/simple" }
@@ -2270,7 +2264,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "datasets" },
     { name = "fastapi" },
-    { name = "jose" },
     { name = "langchain" },
     { name = "langchain-anthropic" },
     { name = "langchain-core" },
@@ -2295,7 +2288,6 @@ dependencies = [
 requires-dist = [
     { name = "datasets" },
     { name = "fastapi" },
-    { name = "jose", specifier = ">=1.0.0" },
     { name = "langchain" },
     { name = "langchain-anthropic" },
     { name = "langchain-core" },

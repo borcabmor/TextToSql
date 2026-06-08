@@ -1,14 +1,16 @@
+import logging
 from os import getenv
 
 from fastapi import HTTPException, Request, status
 from jose import JWTError, jwt
+
+logger = logging.getLogger(__name__)
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM", "HS256")
 
 
 async def auth_middleware(request: Request, call_next):
-    # Endpoints públicos
     public_paths = {
         "/running",
         "/docs",
@@ -21,6 +23,10 @@ async def auth_middleware(request: Request, call_next):
 
     auth_header = request.headers.get("Authorization")
 
+    logger.info(f"Authorization: {auth_header}")
+    logger.info(f"SECRET_KEY configured: {SECRET_KEY is not None}")
+    logger.info(f"ALGORITHM: {ALGORITHM}")
+
     if not auth_header:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -30,8 +36,7 @@ async def auth_middleware(request: Request, call_next):
     try:
         scheme, token = auth_header.split(" ", 1)
 
-        if scheme.lower() != "bearer":
-            raise ValueError("Invalid auth scheme")
+        logger.info(f"Scheme: {scheme}")
 
         payload = jwt.decode(
             token,
@@ -39,19 +44,10 @@ async def auth_middleware(request: Request, call_next):
             algorithms=[ALGORITHM],
         )
 
-        # Disponible en los endpoints
         request.state.user = payload
 
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token or expired",
-        )
-
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header.",
-        )
+    except Exception as e:
+        logger.exception(e)
+        raise
 
     return await call_next(request)
