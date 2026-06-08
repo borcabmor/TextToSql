@@ -9,6 +9,7 @@ from transformers import AutoTokenizer
 
 load_dotenv()
 
+from middleware.auth import auth_middleware
 from src.langchain.agent import TextToSQLAgent
 from src.logging_config import setup_logging
 from src.model_codebert import CodeBertBiEncoder
@@ -89,7 +90,10 @@ def get_agent() -> TextToSQLAgent:
     return _agent
 
 
+# Define middleware
 app = FastAPI(title="Text-to-SQL API")
+
+app.middleware("http")(auth_middleware)
 
 app.add_middleware(
     CORSMiddleware,
