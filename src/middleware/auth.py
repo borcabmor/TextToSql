@@ -5,6 +5,10 @@ from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
 
 SECRET_KEY = getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set")
+
 ALGORITHM = getenv("ALGORITHM", "HS256")
 
 
@@ -37,10 +41,14 @@ async def auth_middleware(request: Request, call_next):
             )
 
         payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM],
+            token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True}
         )
+
+        if payload.get("project_code") != "T2SQL":
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "System incorrect."},
+            )
 
         request.state.user = payload
 
