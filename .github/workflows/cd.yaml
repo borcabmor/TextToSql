@@ -48,7 +48,7 @@ jobs:
           script: |
             set -e
 
-            cd /opt/text-to-sql-api
+            cd /opt/stack
 
             echo "Pull latest image..."
             docker pull ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
