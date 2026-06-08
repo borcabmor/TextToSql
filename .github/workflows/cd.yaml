@@ -1,13 +1,16 @@
 name: CD
+
 on:
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
+
 jobs:
   deploy:
     if: github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'master'
+
     runs-on: ubuntu-latest
 
     permissions:
@@ -25,33 +28,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build imagen
+      - name: Build image
         run: |
           docker build \
             -f Dockerfile.api \
             -t ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest \
             .
 
-      - name: Push imagen
+      - name: Push image
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
 
-      - name: Deploy OVH
+      - name: Deploy OVH (Docker Compose)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
+
+            cd /opt/text-to-sql-api
+
+            echo "Pull latest image..."
             docker pull ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
 
-            docker stop text-to-sql-api || true
-            docker rm text-to-sql-api || true
-
-            docker run -d \
-              --name text-to-sql-api \
-              --restart unless-stopped \
-              -p 8000:8000 \
-              -e WANDB_API_KEY=${{ secrets.WANDB_API_KEY }} \
-              -e ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }} \
-              ghcr.io/${{ github.repository_owner }}/text-to-sql-api:latest
+            echo "Deploy with docker compose..."
+            docker compose up -d --remove-orphans
