@@ -1,7 +1,10 @@
+import os
 from unittest.mock import MagicMock, patch
 
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+
+os.environ["TESTING"] = "true"
 
 from src.api.api_inference import app
 
