@@ -1,4 +1,5 @@
 import logging
+import os
 
 import torch
 from dotenv import load_dotenv
@@ -9,7 +10,6 @@ from transformers import AutoTokenizer
 
 load_dotenv()
 
-from middleware.auth import auth_middleware
 from src.langchain.agent import TextToSQLAgent
 from src.logging_config import setup_logging
 from src.model_codebert import CodeBertBiEncoder
@@ -90,10 +90,13 @@ def get_agent() -> TextToSQLAgent:
     return _agent
 
 
-# Define middleware
+# Define middleware (and not use in tests)
 app = FastAPI(title="Text-to-SQL API")
 
-app.middleware("http")(auth_middleware)
+if os.getenv("TESTING") != "true":
+    from src.middleware.auth import auth_middleware
+
+    app.middleware("http")(auth_middleware)
 
 app.add_middleware(
     CORSMiddleware,
